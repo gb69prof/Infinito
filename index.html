@@ -28,7 +28,10 @@
       <a href="#poesia" class="btn">Vai al testo</a>
     </div>
     <div class="hero-image">
-      <img src="assets/IMG_3491.png" alt="Figura solitaria che contempla il cielo stellato">
+      <!-- CONTENITORE IMMAGINE/VIDEO -->
+      <div id="infinito-media">
+        <img id="hero-image-3491" src="assets/IMG_3491.png" alt="Figura solitaria che contempla il cielo stellato">
+      </div>
     </div>
   </div>
 </header>
@@ -228,5 +231,75 @@
 </footer>
 
 <script src="script.js"></script>
+
+<!-- API DI YOUTUBE PER GESTIRE LA FINE DEL VIDEO -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+  let infinitoPlayer = null;
+  let youtubeApiReady = false;
+
+  // YouTube chiama questa funzione quando l'API è pronta
+  function onYouTubeIframeAPIReady() {
+    youtubeApiReady = true;
+  }
+
+  const mediaContainer = document.getElementById('infinito-media');
+  const heroImg = document.getElementById('hero-image-3491');
+
+  if (heroImg && mediaContainer) {
+    heroImg.style.cursor = 'pointer';
+
+    heroImg.addEventListener('click', function () {
+      // Quando clicco sull'immagine, la sostituisco con il player YouTube
+      function createPlayer() {
+        // Sostituisci il contenuto del contenitore con un div vuoto per il player
+        mediaContainer.innerHTML = '<div id="infinito-player"></div>';
+
+        infinitoPlayer = new YT.Player('infinito-player', {
+          height: '315',
+          width: '560',
+          videoId: 'IO4ugBvYVBQ',  // ID del video di YouTube
+          playerVars: {
+            rel: 0,
+            modestbranding: 1,
+            autoplay: 1
+          },
+          events: {
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      }
+
+      // Se l'API è già pronta, crea subito il player
+      if (youtubeApiReady && typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+        createPlayer();
+      } else {
+        // Altrimenti aspetta finché l'API non è disponibile
+        const interval = setInterval(function () {
+          if (youtubeApiReady && typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+            clearInterval(interval);
+            createPlayer();
+          }
+        }, 100);
+      }
+    });
+  }
+
+  // Quando il video finisce, distruggo il player e ripristino l'immagine
+  function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+      if (infinitoPlayer) {
+        infinitoPlayer.destroy();
+        infinitoPlayer = null;
+      }
+      // Ripristina l'immagine originaria
+      mediaContainer.innerHTML = '';
+      mediaContainer.appendChild(heroImg);
+    }
+  }
+</script>
+
 </body>
 </html>
+
